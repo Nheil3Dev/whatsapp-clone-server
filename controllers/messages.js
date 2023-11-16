@@ -1,13 +1,11 @@
-export class MessageController {
-  constructor ({ messageModel }) {
-    this.messageModel = messageModel
-  }
+import { MessageModel } from '../models/sqlite/messages.js'
 
+export class MessageController {
   getFilteredMessages = async (req, res) => {
     try {
       const { chatId, search } = req.query
 
-      const messages = await this.messageModel.getFilteredMessages({ chatId, search })
+      const messages = await MessageModel.getFilteredMessages({ chatId, search })
 
       res.json(messages)
     } catch (e) {

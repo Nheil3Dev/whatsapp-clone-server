@@ -1,14 +1,12 @@
-export class GroupController {
-  constructor ({ groupModel }) {
-    this.groupModel = groupModel
-  }
+import { GroupModel } from '../models/sqlite/groups.js'
 
+export class GroupController {
   updateGroup = async (req, res) => {
     try {
       const { id } = req.params
       const { name, info } = req.body
 
-      const data = await this.groupModel.updateGroup({ name, info, id })
+      const data = await GroupModel.updateGroup({ name, info, id })
 
       res.json(data)
     } catch (e) {
@@ -20,7 +18,7 @@ export class GroupController {
     try {
       const { id, name, date, admin, usersId } = req.body
 
-      const isCreated = await this.groupModel.createGroup({ id, name, date, admin, usersId })
+      const isCreated = await GroupModel.createGroup({ id, name, date, admin, usersId })
 
       res.json(isCreated)
     } catch (e) {
@@ -33,7 +31,7 @@ export class GroupController {
       const { id } = req.params
       const { contactId } = req.query
 
-      const commonGroups = await this.groupModel.getCommonGroups({ id, contactId })
+      const commonGroups = await GroupModel.getCommonGroups({ id, contactId })
 
       res.json(commonGroups)
     } catch (e) {
@@ -45,7 +43,7 @@ export class GroupController {
     try {
       const { idGroup } = req.params
 
-      const users = await this.groupModel.getUsersGroup({ idGroup })
+      const users = await GroupModel.getUsersGroup({ idGroup })
 
       res.json(users)
     } catch (e) {

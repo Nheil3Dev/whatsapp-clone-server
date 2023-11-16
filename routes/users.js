@@ -1,9 +1,9 @@
 import { Router } from 'express'
 import { UserController } from '../controllers/users.js'
 
-export const createUsersRouter = ({ userModel }) => {
+export const createUsersRouter = () => {
   const usersRouter = Router()
-  const userController = new UserController({ userModel })
+  const userController = new UserController()
 
   // Obtiene datos del perfil de usuario
   usersRouter.get('/:id', userController.getProfileData)

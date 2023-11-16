@@ -1,10 +1,10 @@
 import { Router } from 'express'
 import { GroupController } from '../controllers/groups.js'
 
-export const createGroupsRouter = ({ groupModel }) => {
+export const createGroupsRouter = () => {
   const groupsRouter = Router()
 
-  const groupController = new GroupController({ groupModel })
+  const groupController = new GroupController()
 
   // Actualiza nombre e info de los grupos
   groupsRouter.put('/:id', groupController.updateGroup)
