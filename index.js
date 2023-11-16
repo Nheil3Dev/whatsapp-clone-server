@@ -5,6 +5,14 @@ import express from 'express'
 import loader from 'morgan'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
+import { ChatModel } from './models/sqlite/chats.js'
+import { GroupModel } from './models/sqlite/groups.js'
+import { MessageModel } from './models/sqlite/messages.js'
+import { UserModel } from './models/sqlite/users.js'
+import { createChatsRouter } from './routes/chats.js'
+import { createGroupsRouter } from './routes/groups.js'
+import { createMessagesRouter } from './routes/messages.js'
+import { createUsersRouter } from './routes/users.js'
 
 dotenv.config()
 const PORT = process.env.PORT ?? 1234
@@ -18,49 +26,41 @@ const io = new Server(httpServer, {
   }
 })
 
-const db = createClient({
-  url: 'libsql://grown-pestilence-nheil3dev.turso.io',
+// Data Base
+export const db = createClient({
+  url: process.env.DB_URL,
   authToken: process.env.DB_TOKEN
 })
 
-await db.execute(`
-  CREATE TABLE IF NOT EXISTS whatsappclone (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user TEXT,
-    content TEXT,
-    date TIMESTAMP
-  )
-`)
-
+// WebSocket Server
 io.on('connection', async (socket) => {
-  console.log('A user has connected!')
+  console.log('An user has connected!')
 
   socket.on('disconnect', () => {
     console.log('An user has disconnected')
   })
 
-  socket.on('whatsapp clone msg', async (msg, date) => {
-    const user = socket.handshake.auth.user ?? 'Anonymous'
-    let result
+  socket.on('whatsapp clone msg', async (content, date, groupId, conversationId) => {
     try {
-      result = await db.execute({
-        sql: 'INSERT INTO whatsappclone (user, content, date) VALUES (?, ?, ?)',
-        args: [user, msg, date]
-      })
+      const userId = socket.handshake.auth.user.id
+      const alias = socket.handshake.auth.user.alias
+
+      const id = MessageModel.createMessage({ content, date, userId, groupId, conversationId })
+
+      io.emit('whatsapp clone msg', id.toString(), alias, content, date, userId, groupId, conversationId)
     } catch (e) {
       console.error(e)
     }
-    io.emit('whatsapp clone msg', result.lastInsertRowid.toString(), user, msg, date)
   })
 
   if (!socket.recovered) {
     try {
-      const results = await db.execute({
-        sql: 'SELECT * FROM whatsappclone WHERE id > ?',
-        args: [socket.handshake.auth.serverOffset ?? 0]
-      })
-      results.rows.forEach(({ id, user, content, date }) => {
-        socket.emit('whatsapp clone msg', id.toString(), user, content, date)
+      const serverOffset = socket.handshake.auth.serverOffset
+
+      const messages = MessageModel.getAll({ serverOffset })
+
+      messages.forEach(({ id, alias, content, date, userId, groupId, conversationId }) => {
+        socket.emit('whatsapp clone msg', id.toString(), alias, content, date, userId, groupId, conversationId)
       })
     } catch (e) {
       console.error(e)
@@ -73,26 +73,20 @@ app.use(cors())
 app.use(express.json())
 app.use(loader('dev'))
 
-// Routers
+// Models to use
+const userModel = new UserModel()
+const groupModel = new GroupModel()
+const chatModel = new ChatModel()
+const messageModel = new MessageModel()
+
+// API Root
 app.use('/api', router)
 
-router.get('/messages', async (req, res) => {
-  try {
-    const messages = await db.execute('SELECT * FROM messages')
-    res.json(messages.rows)
-  } catch (e) {
-    console.error(e)
-  }
-})
-
-router.get('/lastMsg', async (req, res) => {
-  try {
-    const lastMsg = await db.execute('SELECT * FROM whatsappclone ORDER BY id DESC LIMIT 1')
-    res.json(lastMsg.rows[0])
-  } catch (e) {
-    console.error(e)
-  }
-})
+// API Routers
+router.use('/group', createGroupsRouter({ groupModel }))
+router.use('/users', createUsersRouter({ userModel }))
+router.use('/chats', createChatsRouter({ chatModel }))
+router.use('/messages', createMessagesRouter({ messageModel }))
 
 httpServer.listen(PORT, () => {
   console.log(`Escuchando en: http://localhost:${PORT}`)
