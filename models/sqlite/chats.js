@@ -46,7 +46,35 @@ export class ChatModel {
 
     const chats = [...groups.rows, ...conversations.rows]
 
-    return chats
+    const addMessages = chats.map(async (chat) => {
+      const messages = await db.execute({
+        sql: `
+          SELECT 
+            m.*,
+            u.alias
+          FROM 
+            mensajes_w_c AS m
+          INNER JOIN
+            usuarios_w_c AS u
+          ON
+            m.id_user = u.id
+          WHERE 
+            (id_conversation = ? OR id_group = ?)
+        `,
+        args: [chat.id, chat.id]
+      })
+      return {
+        ...chat,
+        messages: messages.rows
+      }
+    })
+    const chatsWithMessages = await Promise.all(addMessages)
+    const lastMsg = await db.execute('SELECT id FROM mensajes_w_c ORDER BY date DESC LIMIT 1')
+
+    return {
+      chats: chatsWithMessages,
+      lastMsg: lastMsg.rows[0]
+    }
   }
 
   static async createChat ({ conversationId, date, usersId }) {

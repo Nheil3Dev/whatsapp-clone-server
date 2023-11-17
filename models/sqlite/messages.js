@@ -15,7 +15,8 @@ export class MessageModel {
           m.id_user = u.id
         WHERE 
           content LIKE ? 
-        AND (id_conversation = ? OR id_group = ?)`,
+        AND (id_conversation = ? OR id_group = ?)
+      `,
       args: [`%${search}%`, chatId, chatId]
     })
 

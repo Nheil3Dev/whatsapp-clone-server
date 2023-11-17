@@ -73,12 +73,6 @@ app.use(loader('dev'))
 // API Root
 app.use('/api', mainRouter)
 
-// Prueba
-mainRouter.get('/hello', async (req, res) => {
-  const users = await db.execute('SELECT * FROM usuarios_w_c')
-  res.json(users.rows)
-})
-
 // API Routers
 mainRouter.use('/group', createGroupsRouter())
 mainRouter.use('/users', createUsersRouter())
