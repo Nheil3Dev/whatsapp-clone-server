@@ -82,16 +82,29 @@ export class ChatModel {
       sql: 'INSERT INTO conversaciones_w_c (id, date) VALUES (?, ?)',
       args: [conversationId, date]
     })
-    const addUsers = usersId.map(async (userId) => {
-      return await db.execute({
+
+    let isCreated
+
+    // Conversación contigo mismo
+    if (usersId[0] === usersId[1]) {
+      const addUser = await db.execute({
         sql: 'INSERT INTO conversaciones_usuarios_w_c VALUES (?, ?)',
-        args: [conversationId, userId]
+        args: [conversationId, usersId[0]]
       })
-    })
-    const response = await Promise.all(addUsers).then(values => values.map(value => value.rowsAffected === 1))
 
-    const isCreated = data.rowsAffected === 1 && response.every(item => item === true)
+      isCreated = data.rowsAffected === 1 && addUser.rowsAffected === 1
+    // Conversación normal entre dos usuarios
+    } else {
+      const addUsers = usersId.map(async (userId) => {
+        return await db.execute({
+          sql: 'INSERT INTO conversaciones_usuarios_w_c VALUES (?, ?)',
+          args: [conversationId, userId]
+        })
+      })
+      const response = await Promise.all(addUsers).then(values => values.map(value => value.rowsAffected === 1))
 
+      isCreated = data.rowsAffected === 1 && response.every(item => item === true)
+    }
     return isCreated
   }
 }
