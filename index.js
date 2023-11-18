@@ -6,6 +6,7 @@ import loader from 'morgan'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 import { MessageModel } from './models/sqlite/messages.js'
+import { createAuthRouter } from './routes/auth.js'
 import { createChatsRouter } from './routes/chats.js'
 import { createGroupsRouter } from './routes/groups.js'
 import { createMessagesRouter } from './routes/messages.js'
@@ -74,6 +75,7 @@ app.use(loader('dev'))
 app.use('/api', mainRouter)
 
 // API Routers
+mainRouter.use('/auth', createAuthRouter())
 mainRouter.use('/group', createGroupsRouter())
 mainRouter.use('/users', createUsersRouter())
 mainRouter.use('/chats', createChatsRouter())

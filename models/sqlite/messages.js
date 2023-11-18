@@ -5,7 +5,12 @@ export class MessageModel {
     const messages = await db.execute({
       sql: `
         SELECT 
-          m.*,
+          m.id,
+          m.content,
+          m.date,
+          m.id_user AS userId,
+          m.id_group AS groupId,
+          m.id_conversation AS conversationId,
           u.alias
         FROM 
           mensajes_w_c AS m

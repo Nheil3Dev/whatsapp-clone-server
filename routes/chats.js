@@ -11,5 +11,8 @@ export const createChatsRouter = () => {
   // Crea una conversación nueva
   chatsRouter.post('/', chatController.createChat)
 
+  // Salir de un chat (conversacion o grupo)
+  chatsRouter.delete('/', chatController.deleteChat)
+
   return chatsRouter
 }

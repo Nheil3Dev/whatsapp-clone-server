@@ -50,7 +50,12 @@ export class ChatModel {
       const messages = await db.execute({
         sql: `
           SELECT 
-            m.*,
+            m.id,
+            m.content,
+            m.date,
+            m.id_user AS userId,
+            m.id_group AS groupId,
+            m.id_conversation AS conversationId,
             u.alias
           FROM 
             mensajes_w_c AS m
@@ -106,5 +111,117 @@ export class ChatModel {
       isCreated = data.rowsAffected === 1 && response.every(item => item === true)
     }
     return isCreated
+  }
+
+  static async deleteConversation ({ chatId, userId }) {
+    let isDeleted
+    // Primero comprobamos que no haya ningún mensaje
+    const noMsg = await db.execute({
+      sql: 'SELECT * FROM mensajes_w_c WHERE id_conversation = ? LIMIT 1',
+      args: [chatId]
+    })
+
+    // Si la conversación no tiene mensajes borramos todos los usuarios y la conversacion
+    if (noMsg.rows.length === 0) {
+      const deleteUsers = await db.execute({
+        sql: 'DELETE FROM conversaciones_usuarios WHERE id_conversation = ?',
+        args: [chatId]
+      })
+
+      const deleteConversation = await db.execute({
+        sql: 'DELETE FROM conversaciones_w_c WHERE id = ?',
+        args: [chatId]
+      })
+
+      isDeleted = deleteUsers.rowsAffected > 1 && deleteConversation.rowsAffected === 1
+
+    // Si hay mensajes
+    } else {
+      // Borramos de la conversación al usuario solicitante
+      const deleteUser = await db.execute({
+        sql: 'DELETE FROM conversaciones_usuarios_w_c WHERE id_conversation = ? AND id_user = ?',
+        args: [chatId, userId]
+      })
+
+      // Comprobamos que el otro usuario no se haya salido de la conversación
+      const isLastUser = await db.execute({
+        sql: 'SELECT * FROM conversaciones_usuarios_w_c WHERE id_conversation = ?',
+        args: [chatId]
+      })
+
+      // Si el otro usuario también ha borrado la conversación, borramos la conversación y sus mensajes
+      if (isLastUser.rows.length === 0) {
+        const deleteConversation = await db.execute({
+          sql: 'DELETE FROM conversaciones_w_c WHERE id = ?',
+          args: [chatId]
+        })
+
+        const deleteMsgs = await db.execute({
+          sql: 'DELETE FROM mensajes_w_c WHERE id_conversation = ?',
+          args: [chatId]
+        })
+
+        isDeleted = deleteUser.rowsAffected === 1 && deleteConversation.rowsAffected === 1 && deleteMsgs.rowsAffected >= 1
+      } else {
+        isDeleted = deleteUser.rowsAffected === 1
+      }
+    }
+    return isDeleted
+  }
+
+  static async deleteGroup ({ chatId, userId }) {
+    let isDeleted
+    // Primero comprobamos que no haya ningún mensaje
+    const noMsg = await db.execute({
+      sql: 'SELECT * FROM mensajes_w_c WHERE id_group = ? LIMIT 1',
+      args: [chatId]
+    })
+
+    // Si el grupo no tiene mensajes borramos todos los usuarios y la conversacion
+    if (noMsg.rows.length === 0) {
+      const deleteUsers = await db.execute({
+        sql: 'DELETE FROM grupos_usuarios WHERE id_group = ?',
+        args: [chatId]
+      })
+
+      const deleteGroup = await db.execute({
+        sql: 'DELETE FROM grupos_w_c WHERE id = ?',
+        args: [chatId]
+      })
+
+      isDeleted = deleteUsers.rowsAffected > 1 && deleteGroup.rowsAffected === 1
+
+    // Si hay mensajes
+    } else {
+      // Borramos de la conversación al usuario solicitante
+      const deleteUser = await db.execute({
+        sql: 'DELETE FROM grupos_usuarios_w_c WHERE id_group = ? AND id_user = ?',
+        args: [chatId, userId]
+      })
+
+      // Comprobamos que el otro usuario no se haya salido de la conversación
+      const isLastUser = await db.execute({
+        sql: 'SELECT * FROM grupos_usuarios_w_c WHERE id_group = ?',
+        args: [chatId]
+      })
+
+      // Si el otro usuario también ha borrado la conversación, borramos la conversación y sus mensajes
+      if (isLastUser.rows.length === 0) {
+        const deleteGroup = await db.execute({
+          sql: 'DELETE FROM grupos_w_c WHERE id = ?',
+          args: [chatId]
+        })
+
+        const deleteMsgs = await db.execute({
+          sql: 'DELETE FROM mensajes_w_c WHERE id_group = ?',
+          args: [chatId]
+        })
+
+        isDeleted = deleteUser.rowsAffected === 1 && deleteGroup.rowsAffected === 1 && deleteMsgs.rowsAffected >= 1
+      } else {
+        isDeleted = deleteUser.rowsAffected === 1
+      }
+    }
+    return isDeleted
   }
 }

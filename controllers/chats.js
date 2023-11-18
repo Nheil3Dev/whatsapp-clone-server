@@ -25,4 +25,21 @@ export class ChatController {
       console.error(e)
     }
   }
+
+  deleteChat = async (req, res) => {
+    try {
+      const { conversationId, groupId, userId } = req.body
+      let isDeleted
+
+      if (!groupId) {
+        isDeleted = await ChatModel.deleteConversation({ conversationId, userId })
+      } else {
+        isDeleted = await ChatModel.deleteGroup({ groupId, userId })
+      }
+
+      res.json(isDeleted)
+    } catch (e) {
+      console.error(e)
+    }
+  }
 }
