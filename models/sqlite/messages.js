@@ -66,6 +66,12 @@ export class MessageModel {
         sql: 'INSERT INTO mensajes_w_c (content, date, id_user, id_conversation) VALUES (?, ?, ?, ?)',
         args: [content, date, userId, conversationId]
       })
+
+      // activamos las conversaciones por si el otro usuario la ha borrado
+      await db.execute({
+        sql: 'UPDATE conversaciones_usuarios_w_c SET active = 1 WHERE id_conversation = ?',
+        args: [conversationId]
+      })
     }
     return result.lastInsertRowid
   }

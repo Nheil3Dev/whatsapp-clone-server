@@ -8,6 +8,8 @@ export const createChatsRouter = () => {
   // Obtiene todas las conversaciones y grupos de un usuario
   chatsRouter.get('/', chatController.getAllChats)
 
+  chatsRouter.get('/check', chatController.checkChat)
+
   // Crea una conversación nueva
   chatsRouter.post('/', chatController.createChat)
 

@@ -8,7 +8,7 @@ export class AuthModel {
       args: [email]
     })
 
-    if (user.rows) {
+    if (user.rows[0]) {
       if (user.rows[0].password === password) {
         response = { email: true, password: true, user: user.rows[0] }
       } else {

@@ -51,6 +51,7 @@ await db.execute(`
     CREATE TABLE IF NOT EXISTS conversaciones_usuarios_w_c (
       id_conversation TEXT,
       id_user TEXT,
+      active INTEGER DEFAULT 1,
       PRIMARY KEY (id_conversation, id_user),
       FOREIGN KEY (id_conversation) REFERENCES conversaciones_w_c(id),
       FOREIGN KEY (id_user) REFERENCES usuarios_w_c(id)

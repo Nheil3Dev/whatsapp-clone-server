@@ -18,5 +18,7 @@ export const createGroupsRouter = () => {
   // Devuelve todos los usuarios que pertenecen a un grupo
   groupsRouter.get('/users/:idGroup', groupController.getUsersGroup)
 
+  groupsRouter.delete('/', groupController.deleteGroup)
+
   return groupsRouter
 }

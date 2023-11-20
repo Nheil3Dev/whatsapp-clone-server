@@ -50,4 +50,16 @@ export class GroupController {
       console.error(e)
     }
   }
+
+  deleteGroup = async (req, res) => {
+    try {
+      const { userId, chatId } = req.body
+
+      const isDeleted = await GroupModel.deleteGroup({ chatId, userId })
+
+      res.json(isDeleted)
+    } catch (e) {
+      console.error(e)
+    }
+  }
 }

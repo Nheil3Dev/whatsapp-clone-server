@@ -32,10 +32,20 @@ export const db = createClient({
 
 // WebSocket Server
 io.on('connection', async (socket) => {
-  console.log('An user has connected!')
+  try {
+    const alias = socket.handshake.auth.user.alias
+    console.log(`${alias} has connected!`)
+  } catch (e) {
+    console.error(e)
+  }
 
   socket.on('disconnect', () => {
-    console.log('An user has disconnected')
+    try {
+      const alias = socket.handshake.auth.user.alias
+      console.log(`${alias} has disconnected`)
+    } catch (e) {
+      console.error(e)
+    }
   })
 
   socket.on('whatsapp clone msg', async (content, date, groupId, conversationId) => {
