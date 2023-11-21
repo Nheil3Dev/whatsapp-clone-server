@@ -75,4 +75,22 @@ export class MessageModel {
     }
     return result.lastInsertRowid
   }
+
+  static async modifyMessage ({ msgId, content }) {
+    const isModified = await db.execute({
+      sql: 'UPDATE mensajes_w_c SET content = ? WHERE id = ?',
+      args: [content, msgId]
+    })
+
+    return isModified.rowsAffected === 1
+  }
+
+  static async deleteMessage ({ msgId }) {
+    const isDeleted = await db.execute({
+      sql: 'DELETE FROM mensajes_w_c WHERE id = ?',
+      args: [msgId]
+    })
+
+    return isDeleted.rowsAffected === 1
+  }
 }

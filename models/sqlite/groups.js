@@ -85,7 +85,7 @@ export class GroupModel {
     // Si el grupo no tiene mensajes borramos todos los usuarios y la conversacion
     if (noMsg.rows.length === 0) {
       const deleteUsers = await db.execute({
-        sql: 'DELETE FROM grupos_usuarios WHERE id_group = ?',
+        sql: 'DELETE FROM grupos_usuarios_w_c WHERE id_group = ?',
         args: [chatId]
       })
 
@@ -98,7 +98,7 @@ export class GroupModel {
 
     // Si hay mensajes
     } else {
-      // Borramos de la conversación al usuario solicitante
+      // Borramos al usuario del grupo
       const deleteUser = await db.execute({
         sql: 'DELETE FROM grupos_usuarios_w_c WHERE id_group = ? AND id_user = ?',
         args: [chatId, userId]
@@ -110,20 +110,21 @@ export class GroupModel {
         args: [chatId]
       })
 
-      // Si el otro usuario también ha borrado la conversación, borramos la conversación y sus mensajes
+      // Si el grupo está vacío
       if (isLastUser.rows.length === 0) {
-        const deleteGroup = await db.execute({
-          sql: 'DELETE FROM grupos_w_c WHERE id = ?',
-          args: [chatId]
-        })
-
         const deleteMsgs = await db.execute({
           sql: 'DELETE FROM mensajes_w_c WHERE id_group = ?',
           args: [chatId]
         })
 
+        const deleteGroup = await db.execute({
+          sql: 'DELETE FROM grupos_w_c WHERE id = ?',
+          args: [chatId]
+        })
+
         isDeleted = deleteUser.rowsAffected === 1 && deleteGroup.rowsAffected === 1 && deleteMsgs.rowsAffected >= 1
       } else {
+        // TODO: Aqui deberiamos poner otro admin si es que es el admin el que abandonado el grupo
         isDeleted = deleteUser.rowsAffected === 1
       }
     }

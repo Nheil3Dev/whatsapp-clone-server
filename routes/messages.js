@@ -8,5 +8,11 @@ export const createMessagesRouter = () => {
   // Obtiene los mensajes de un chat concreto según un filtro
   messagesRouter.get('/', messageController.getFilteredMessages)
 
+  // Modificar un mensaje
+  messagesRouter.patch('/', messageController.modifyMessage)
+
+  // Borrar un mensaje
+  messagesRouter.delete('/', messageController.deleteMessage)
+
   return messagesRouter
 }
