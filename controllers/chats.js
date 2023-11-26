@@ -49,4 +49,17 @@ export class ChatController {
       console.error(e)
     }
   }
+
+  getConversation = async (req, res) => {
+    try {
+      const { conversationId } = req.params
+      const { userId } = req.query
+
+      const conversation = await ChatModel.getConversation({ conversationId, userId })
+
+      res.json(conversation)
+    } catch (e) {
+      console.error(e)
+    }
+  }
 }

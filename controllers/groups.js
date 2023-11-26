@@ -62,4 +62,17 @@ export class GroupController {
       console.error(e)
     }
   }
+
+  getGroup = async (req, res) => {
+    try {
+      const { groupId } = req.params
+      console.log(groupId)
+
+      const group = await GroupModel.getGroup({ groupId })
+
+      res.json(group)
+    } catch (e) {
+      console.error(e)
+    }
+  }
 }

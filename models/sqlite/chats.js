@@ -41,7 +41,6 @@ export class ChatModel {
             AND active = 1
           )
           AND u.id != ?
-          
       `,
       args: [idUser, idUser]
     })
@@ -242,5 +241,32 @@ export class ChatModel {
     }
 
     return {}
+  }
+
+  static async getConversation ({ conversationId, userId }) {
+    const conversation = await db.execute({
+      sql: `
+        SELECT
+          c.id AS id,
+          u.id AS contactId,
+          u.alias AS name,
+          u.info AS info,
+          u.email AS email,
+          c.date AS date
+        FROM
+          conversaciones_w_c AS c
+        JOIN
+          conversaciones_usuarios_w_c AS cu ON cu.id_conversation = c.id
+        JOIN
+          usuarios_w_c AS u ON cu.id_user = u.id
+        WHERE
+          c.id = ?
+        AND 
+          u.id != ?
+      `,
+      args: [conversationId, userId]
+    })
+
+    return conversation.rows[0]
   }
 }

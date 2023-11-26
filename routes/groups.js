@@ -6,6 +6,9 @@ export const createGroupsRouter = () => {
 
   const groupController = new GroupController()
 
+  // Devuelve un grupo
+  groupsRouter.get('/:groupId', groupController.getGroup)
+
   // Actualiza nombre e info de los grupos
   groupsRouter.put('/:id', groupController.updateGroup)
 
@@ -13,7 +16,7 @@ export const createGroupsRouter = () => {
   groupsRouter.post('/', groupController.createGroup)
 
   // Devuelve los grupos que tienen dos usuarios en común
-  groupsRouter.get('/:id', groupController.getCommonGroups)
+  groupsRouter.get('/common/:id', groupController.getCommonGroups)
 
   // Devuelve todos los usuarios que pertenecen a un grupo
   groupsRouter.get('/users/:idGroup', groupController.getUsersGroup)

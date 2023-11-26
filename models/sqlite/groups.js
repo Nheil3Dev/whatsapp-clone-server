@@ -130,4 +130,23 @@ export class GroupModel {
     }
     return isDeleted
   }
+
+  static async getGroup ({ groupId }) {
+    const group = await db.execute({
+      sql: `
+        SELECT 
+          g.*,
+          u.alias AS adminAlias
+        FROM 
+          grupos_w_c AS g 
+        INNER JOIN
+          usuarios_w_c AS u ON u.id = g.admin
+        WHERE
+          g.id = ?
+      `,
+      args: [groupId]
+    })
+
+    return group.rows[0]
+  }
 }

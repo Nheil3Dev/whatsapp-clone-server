@@ -5,6 +5,8 @@ import express from 'express'
 import loader from 'morgan'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
+import { ChatModel } from './models/sqlite/chats.js'
+import { GroupModel } from './models/sqlite/groups.js'
 import { MessageModel } from './models/sqlite/messages.js'
 import { createAuthRouter } from './routes/auth.js'
 import { createChatsRouter } from './routes/chats.js'
@@ -48,14 +50,60 @@ io.on('connection', async (socket) => {
     }
   })
 
-  socket.on('whatsapp clone msg', async (content, date, groupId, conversationId) => {
+  socket.on('send msg', async (content, date, groupId, conversationId) => {
     try {
       const userId = socket.handshake.auth.user.id
       const alias = socket.handshake.auth.user.alias
 
       const id = await MessageModel.createMessage({ content, date, userId, groupId, conversationId })
 
-      io.emit('whatsapp clone msg', id.toString(), alias, content, date, userId, groupId, conversationId)
+      io.emit('send msg', id.toString(), alias, content, date, userId, groupId, conversationId)
+    } catch (e) {
+      console.error(e)
+    }
+  })
+
+  socket.on('delete msg', async (msgId, chatId) => {
+    try {
+      const isDeleted = await MessageModel.deleteMessage({ msgId })
+
+      if (isDeleted) {
+        io.emit('delete msg', msgId, chatId)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  })
+
+  socket.on('modify msg', async (msgId, content, chatId) => {
+    try {
+      const isModified = await MessageModel.modifyMessage({ msgId, content })
+
+      if (isModified) {
+        io.emit('modify msg', msgId, content, chatId)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  })
+
+  socket.on('create conversation', async (conversationId, date, usersId) => {
+    try {
+      const isCreated = await ChatModel.createChat({ conversationId, date, usersId })
+      if (isCreated) {
+        io.emit('create conversation', conversationId, usersId)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  })
+
+  socket.on('create group', async (groupId, name, date, admin, usersId) => {
+    try {
+      const isCreated = await GroupModel.createGroup({ id: groupId, name, date, admin, usersId })
+      if (isCreated) {
+        io.emit('create group', groupId, usersId)
+      }
     } catch (e) {
       console.error(e)
     }
@@ -68,7 +116,7 @@ io.on('connection', async (socket) => {
       const messages = await MessageModel.getAll({ serverOffset })
 
       messages.forEach(({ id, alias, content, date, userId, groupId, conversationId }) => {
-        socket.emit('whatsapp clone msg', id.toString(), alias, content, date, userId, groupId, conversationId)
+        socket.emit('send msg', id.toString(), alias, content, date, userId, groupId, conversationId)
       })
     } catch (e) {
       console.error(e)
@@ -80,6 +128,27 @@ io.on('connection', async (socket) => {
 app.use(cors())
 app.use(express.json())
 app.use(loader('dev'))
+
+// APP
+app.get('/', (req, res) => {
+  res.sendFile(process.cwd() + '/dist/index.html')
+})
+
+app.get('/css', (req, res) => {
+  res.sendFile(process.cwd() + '/dist/assets/index.css')
+})
+
+app.get('/js', (req, res) => {
+  res.sendFile(process.cwd() + '/dist/assets/index.js')
+})
+
+app.get('/bg-chat-tile-dark.png', (req, res) => {
+  res.sendFile(process.cwd() + '/dist/bg-chat-tile-dark.png')
+})
+
+app.get('/favicon', (req, res) => {
+  res.sendFile(process.cwd() + '/dist/favicon.svg')
+})
 
 // API Root
 app.use('/api', mainRouter)
