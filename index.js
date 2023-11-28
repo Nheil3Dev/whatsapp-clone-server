@@ -109,6 +109,17 @@ io.on('connection', async (socket) => {
     }
   })
 
+  socket.on('modify group', async (groupId, name, info) => {
+    try {
+      const isModified = await GroupModel.updateGroup({ name, info, id: groupId })
+      if (isModified) {
+        io.emit('modify group', groupId, name, info)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  })
+
   if (!socket.recovered) {
     try {
       const serverOffset = socket.handshake.auth.serverOffset
@@ -148,6 +159,10 @@ app.get('/bg-chat-tile-dark.png', (req, res) => {
 
 app.get('/favicon', (req, res) => {
   res.sendFile(process.cwd() + '/dist/favicon.svg')
+})
+
+app.get('/whatsappclone', (req, res) => {
+  res.sendFile(process.cwd() + '/dist/whatsappclone.png')
 })
 
 // API Root

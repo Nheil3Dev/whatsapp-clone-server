@@ -15,9 +15,9 @@ export class AuthController {
 
   register = async (req, res) => {
     try {
-      const { email, password } = req.body
+      const { id, alias, info, email, password } = req.body
 
-      const response = await AuthModel.register({ email, password })
+      const response = await AuthModel.register({ id, alias, info, email, password })
 
       res.json(response)
     } catch (e) {

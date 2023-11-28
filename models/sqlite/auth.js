@@ -20,7 +20,21 @@ export class AuthModel {
     return response
   }
 
-  static async register ({ email, password }) {
+  static async register ({ id, alias, info, email, password }) {
+    const isRegistered = await db.execute({
+      sql: 'SELECT * FROM usuarios_w_c WHERE email = ?',
+      args: [email]
+    })
 
+    if (isRegistered.rows[0]) return false
+
+    const registerUser = await db.execute({
+      sql: 'INSERT INTO usuarios_w_c VALUES (?, ?, ?, ?, ?)',
+      args: [id, email, password, alias, info]
+    })
+
+    if (registerUser.rowsAffected === 1) return true
+
+    return false
   }
 }
