@@ -22,7 +22,7 @@ const mainRouter = express.Router()
 const httpServer = createServer(app)
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:5173'
+    origin: process.env.NODE_ENV === 'production' ? process.cwd() + '/api/' : 'http://localhost:5173'
   }
 })
 
@@ -140,29 +140,12 @@ app.use(cors())
 app.use(express.json())
 app.use(loader('dev'))
 
-// APP
-app.get('/', (req, res) => {
+// Configuración del middleware para servir archivos estáticos
+app.use(express.static(process.cwd() + '/dist/'))
+
+// App
+app.get('*', (req, res) => {
   res.sendFile(process.cwd() + '/dist/index.html')
-})
-
-app.get('/css', (req, res) => {
-  res.sendFile(process.cwd() + '/dist/assets/index.css')
-})
-
-app.get('/js', (req, res) => {
-  res.sendFile(process.cwd() + '/dist/assets/index.js')
-})
-
-app.get('/bg-chat-tile-dark.png', (req, res) => {
-  res.sendFile(process.cwd() + '/dist/bg-chat-tile-dark.png')
-})
-
-app.get('/favicon', (req, res) => {
-  res.sendFile(process.cwd() + '/dist/favicon.svg')
-})
-
-app.get('/whatsappclone', (req, res) => {
-  res.sendFile(process.cwd() + '/dist/whatsappclone.png')
 })
 
 // API Root
