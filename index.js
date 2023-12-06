@@ -148,6 +148,10 @@ app.get('*', (req, res) => {
   res.sendFile(process.cwd() + '/dist/index.html')
 })
 
+app.get('/bg-chat-tile-dark.png', (req, res) => {
+  res.sendFile(process.cwd() + '/dist/bg-chat-tile-dark.png')
+})
+
 // API Root
 app.use('/api', mainRouter)
 
