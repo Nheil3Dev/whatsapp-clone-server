@@ -144,12 +144,16 @@ app.use(loader('dev'))
 app.use(express.static(process.cwd() + '/dist/'))
 
 // App
-app.get('*', (req, res) => {
+app.get('/', (req, res) => {
   res.sendFile(process.cwd() + '/dist/index.html')
 })
 
-app.get('/bg-chat-tile-dark.png', (req, res) => {
+app.get('/assets/bg-chat-tile-dark.png', (req, res) => {
   res.sendFile(process.cwd() + '/dist/bg-chat-tile-dark.png')
+})
+
+app.get('/whatsappclone', (req, res) => {
+  res.sendFile(process.cwd() + '/dist/whatsappclone.png')
 })
 
 // API Root
